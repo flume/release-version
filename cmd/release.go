@@ -5,14 +5,15 @@ import (
 	"log"
 	"os"
 
-	"github.com/hekike/unchain/pkg/parser"
-	"github.com/hekike/unchain/pkg/release"
+	"github.com/flume/release-version/pkg/parser"
+	"github.com/flume/release-version/pkg/release"
 	"github.com/spf13/cobra"
 )
 
 // GetReleaseCmd returns the release cmd
 func GetReleaseCmd() *cobra.Command {
 	var changeFlag string
+	var suppressPush bool
 
 	// Default dir is the working directory
 	dir, err := os.Getwd()
@@ -38,7 +39,7 @@ remote. For npm libraries it also bumps the package.json file.`,
 
 			// Start release
 			results := make(chan release.Result)
-			go release.Release(dir, change, results)
+			go release.Release(dir, change, results, release.ReleaseOptions{SuppressPush: suppressPush})
 
 			// Results
 			statusCounter := 0
@@ -72,6 +73,14 @@ remote. For npm libraries it also bumps the package.json file.`,
 		"c",
 		"",
 		"SemVer change (patch|minor|major)",
+	)
+
+	cmdRelease.Flags().BoolVarP(
+		&suppressPush,
+		"suppress-push",
+		"p",
+		false,
+		"Suppress the push step",
 	)
 
 	return cmdRelease
@@ -138,7 +147,7 @@ func handleResult(res release.Result) {
 		)
 	case release.PhaseGitRelease:
 		fmt.Printf(
-			"git tagged and pushed (%s)\n",
+			"git tagged and pushed if relevant (%s)\n",
 			res.Message,
 		)
 	case release.PhasePackagePublish:

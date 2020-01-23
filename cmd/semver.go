@@ -5,8 +5,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/hekike/unchain/pkg/parser"
-	"github.com/hekike/unchain/pkg/semver"
+	"github.com/flume/release-version/pkg/parser"
+	"github.com/flume/release-version/pkg/semver"
 	"github.com/spf13/cobra"
 )
 
@@ -31,7 +31,10 @@ func GetSemverCmd() *cobra.Command {
 			}
 
 			change := semver.GetChange(commits)
-			fmt.Println(change)
+			fmt.Printf("Change Detected: %v\n", change)
+
+			ver, _ := semver.GetVersion(semver.GetLastVersion(commits), change)
+			fmt.Printf("Next Version: %v\n", ver)
 		},
 	}
 

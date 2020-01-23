@@ -3,14 +3,16 @@ package changelog
 import (
 	"fmt"
 
-	"github.com/hekike/unchain/pkg/git"
-	"github.com/hekike/unchain/pkg/parser"
+	"github.com/flume/release-version/pkg/git"
+	"github.com/flume/release-version/pkg/parser"
 )
 
 // Save generates and adds changelog.md to Git
 func Save(
 	dir string,
-	version string,
+	newVersion string,
+	lastVersion string,
+	change parser.SemVerChange,
 	commits []parser.ConventionalCommit,
 	user *git.User,
 ) (
@@ -18,8 +20,12 @@ func Save(
 	string,
 	error,
 ) {
+
+	// get a remote path to try to use in the markdown
+	rPath, _ := git.GetRemotePath(dir)
+
 	// Generate changelog
-	markdown := Generate(version, commits)
+	markdown := Generate(newVersion, lastVersion, change, commits, rPath)
 
 	// Write changelog
 	file, err := Prepend(dir, markdown)
@@ -28,7 +34,7 @@ func Save(
 	}
 
 	// Add to Git
-	err = GitCommit(dir, version, user)
+	err = GitCommit(dir, newVersion, user)
 	if err != nil {
 		return file, markdown, fmt.Errorf("[Save] git commit: %v", err)
 	}

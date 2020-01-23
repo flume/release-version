@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	sv "github.com/coreos/go-semver/semver"
-	"github.com/hekike/unchain/pkg/parser"
+	"github.com/flume/release-version/pkg/parser"
 )
 
 // GetChange determinate semver changes (patch, minor, major)
@@ -19,6 +19,19 @@ func GetChange(commits []parser.ConventionalCommit) parser.SemVerChange {
 		}
 	}
 	return change
+}
+
+func GetLastVersion(commits []parser.ConventionalCommit) string {
+	i := len(commits) - 1
+	for i > -1 {
+		commit := commits[i]
+		if commit.SemVer != "" {
+			return commit.SemVer
+		}
+		i--
+	}
+
+	return "0.0.0"
 }
 
 // GetVersion calculate version

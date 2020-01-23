@@ -7,7 +7,7 @@ import (
 	"os"
 	"path"
 
-	"github.com/hekike/unchain/pkg/git"
+	"github.com/flume/release-version/pkg/git"
 )
 
 var changelogFile = "CHANGELOG.md"
@@ -27,8 +27,8 @@ func Prepend(dir string, content string) (string, error) {
 	}
 
 	writer := bufio.NewWriter(f)
-	writer.WriteString(content)
-	writer.Write(current)
+	_, _ = writer.WriteString(content)
+	_, _ = writer.Write(current)
 
 	if err := writer.Flush(); err != nil {
 		return changelogFile, fmt.Errorf("[Prepend] flush file: %v", err)
@@ -39,7 +39,7 @@ func Prepend(dir string, content string) (string, error) {
 
 // GitCommit adds CHANGELOG.md to Git
 func GitCommit(dir string, version string, user *git.User) error {
-	message := fmt.Sprintf("chore(changelog): update for version %s", version)
+	message := fmt.Sprintf("chore(release): %s", version)
 
 	err := git.Commit(dir, changelogFile, message, user)
 	if err != nil {

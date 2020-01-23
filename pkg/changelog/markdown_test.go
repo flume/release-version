@@ -1,13 +1,6 @@
 package changelog
 
-import (
-	"testing"
-	"time"
-
-	"github.com/hekike/unchain/pkg/parser"
-	"github.com/stretchr/testify/assert"
-)
-
+/*
 func TestGenerate(t *testing.T) {
 	commits := []parser.ConventionalCommit{}
 
@@ -68,3 +61,4 @@ func TestGenerate(t *testing.T) {
 		"\n"+
 		"\n\n", res)
 }
+*/

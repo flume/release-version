@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/hekike/unchain/pkg/changelog"
-	"github.com/hekike/unchain/pkg/git"
-	"github.com/hekike/unchain/pkg/npm"
-	"github.com/hekike/unchain/pkg/parser"
-	"github.com/hekike/unchain/pkg/semver"
+	"github.com/flume/release-version/pkg/changelog"
+	"github.com/flume/release-version/pkg/git"
+	"github.com/flume/release-version/pkg/npm"
+	"github.com/flume/release-version/pkg/parser"
+	"github.com/flume/release-version/pkg/semver"
 )
 
 // Phase describes the release phase
@@ -41,13 +41,17 @@ const (
 
 // Result result of release
 type Result struct {
-	Phase Phase
+	Phase   Phase
 	Message string
 	Error   error
 }
 
+type ReleaseOptions struct {
+	SuppressPush bool
+}
+
 // Release generate changelog and tag release
-func Release(path string, change parser.SemVerChange, ch chan Result) {
+func Release(path string, change parser.SemVerChange, ch chan Result, options ReleaseOptions) {
 	defer close(ch)
 
 	// Get Git User
@@ -59,7 +63,7 @@ func Release(path string, change parser.SemVerChange, ch chan Result) {
 		return
 	}
 	ch <- Result{
-		Phase: PhaseGetGitUser,
+		Phase:   PhaseGetGitUser,
 		Message: user.String(),
 	}
 
@@ -72,7 +76,7 @@ func Release(path string, change parser.SemVerChange, ch chan Result) {
 		return
 	}
 	ch <- Result{
-		Phase: PhaseParseCommits,
+		Phase:   PhaseParseCommits,
 		Message: strconv.Itoa(len(commits)),
 	}
 
@@ -83,7 +87,7 @@ func Release(path string, change parser.SemVerChange, ch chan Result) {
 		if lastCommit.SemVer != "" {
 			version = lastCommit.SemVer
 			ch <- Result{
-				Phase: PhaseLastVersionFromCommit,
+				Phase:   PhaseLastVersionFromCommit,
 				Message: version,
 			}
 		}
@@ -105,7 +109,7 @@ func Release(path string, change parser.SemVerChange, ch chan Result) {
 		}
 		npmVersion = pkg.Version
 		ch <- Result{
-			Phase: PhaseLastVersionFromPackage,
+			Phase:   PhaseLastVersionFromPackage,
 			Message: npmVersion,
 		}
 	}
@@ -124,10 +128,10 @@ func Release(path string, change parser.SemVerChange, ch chan Result) {
 	}
 
 	// Find Change
-	if (change == "") {
+	if change == "" {
 		change = semver.GetChange(commits)
 		ch <- Result{
-			Phase: PhaseChangeFound,
+			Phase:   PhaseChangeFound,
 			Message: string(change),
 		}
 	}
@@ -144,12 +148,12 @@ func Release(path string, change parser.SemVerChange, ch chan Result) {
 		return
 	}
 	ch <- Result{
-		Phase: PhaseNextVersion,
+		Phase:   PhaseNextVersion,
 		Message: newVersion,
 	}
 
 	// Generate changelog
-	cf, _, err := changelog.Save(path, newVersion, commits, user)
+	cf, _, err := changelog.Save(path, newVersion, version, change, commits, user)
 	if err != nil {
 		ch <- Result{
 			Error: fmt.Errorf("[Release] save changelog: %v", err),
@@ -157,7 +161,7 @@ func Release(path string, change parser.SemVerChange, ch chan Result) {
 		return
 	}
 	ch <- Result{
-		Phase: PhaseChangelogUpdated,
+		Phase:   PhaseChangelogUpdated,
 		Message: cf,
 	}
 
@@ -176,7 +180,7 @@ func Release(path string, change parser.SemVerChange, ch chan Result) {
 	}
 
 	// Release: Git
-	err = git.Release(path, newVersion, user)
+	err = git.Release(path, newVersion, user, options.SuppressPush)
 	if err != nil {
 		ch <- Result{
 			Error: fmt.Errorf("[Release] git: %v", err),
@@ -184,7 +188,7 @@ func Release(path string, change parser.SemVerChange, ch chan Result) {
 		return
 	}
 	ch <- Result{
-		Phase: PhaseGitRelease,
+		Phase:   PhaseGitRelease,
 		Message: newVersion,
 	}
 

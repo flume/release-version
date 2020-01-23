@@ -7,7 +7,7 @@ import (
 	"os"
 	"path"
 
-	"github.com/hekike/unchain/pkg/utils"
+	"github.com/flume/release-version/pkg/utils"
 )
 
 var runner utils.Runner = utils.CommandRunner{}
@@ -39,7 +39,7 @@ func ParsePackage(dir string) (*Package, error) {
 	byteValue, _ := ioutil.ReadAll(jsonFile)
 
 	var pkg Package
-	json.Unmarshal(byteValue, &pkg)
+	_ = json.Unmarshal(byteValue, &pkg)
 
 	return &pkg, nil
 }

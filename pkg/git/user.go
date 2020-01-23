@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/hekike/unchain/pkg/utils"
+	"github.com/flume/release-version/pkg/utils"
 )
 
 // User git user

@@ -2,6 +2,7 @@ package git
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	git "gopkg.in/src-d/go-git.v4"
@@ -11,15 +12,17 @@ import (
 )
 
 // Release Git release
-func Release(dir string, version string, user *User) error {
+func Release(dir string, version string, user *User, suppressPush bool) error {
 	_, err := Tag(dir, version, user)
 	if err != nil {
 		return fmt.Errorf("[Release] tag: %v", err)
 	}
 
-	err = Push(dir, version)
-	if err != nil {
-		return fmt.Errorf("[Release] push: %v", err)
+	if !suppressPush {
+		err = Push(dir, version)
+		if err != nil {
+			return fmt.Errorf("[Release] push: %v", err)
+		}
 	}
 
 	return nil
@@ -108,4 +111,41 @@ func Push(dir string, version string) error {
 	}
 
 	return nil
+}
+
+func GetRemotePath(dir string) (string, error) {
+	r, err := git.PlainOpen(dir)
+	if err != nil {
+		return "", fmt.Errorf("[Remote Path] open repo: %v", err)
+	}
+
+	remotes, err := r.Remotes()
+	if err != nil {
+		return "", fmt.Errorf("[Remote Path] get remotes: %v", err)
+	}
+
+	var path string
+	for _, r := range remotes {
+		if !strings.Contains(r.String(), "origin") {
+			continue
+		}
+		urls := r.Config().URLs
+		if len(urls) < 1 {
+			return "", fmt.Errorf("[Remote Path] couldn't find remote urls")
+		}
+		path = urls[0]
+		break
+	}
+
+	if path != "" {
+		splt := strings.Split(path, "@")
+		// take the second half and use it in the path to return
+		if len(splt) > 1 {
+			path = splt[len(splt)-1]
+		}
+	}
+
+	path = strings.TrimSuffix(path, ".git")
+	path = strings.Replace(path, ":", "/", -1)
+	return path, nil
 }

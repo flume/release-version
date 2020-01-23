@@ -3,7 +3,7 @@ package semver
 import (
 	"testing"
 
-	"github.com/hekike/unchain/pkg/parser"
+	"github.com/flume/release-version/pkg/parser"
 	"github.com/stretchr/testify/assert"
 )
 

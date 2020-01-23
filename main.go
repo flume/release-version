@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/hekike/unchain/cmd"
+	"github.com/flume/release-version/cmd"
 	"github.com/spf13/cobra"
 )
 
@@ -10,5 +10,5 @@ func main() {
 	rootCmd.AddCommand(cmd.GetParseCmd())
 	rootCmd.AddCommand(cmd.GetReleaseCmd())
 	rootCmd.AddCommand(cmd.GetSemverCmd())
-	rootCmd.Execute()
+	_ = rootCmd.Execute()
 }
