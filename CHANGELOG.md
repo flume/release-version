@@ -1,3 +1,15 @@
+# [3.0.0](https://github.com/flume/release-version/compare/2.3.0...3.0.0) (2020-02-28)
+
+### Bug Fixes
+
+* **parser:** fix various parsing issues ([68b8f83](https://github.com/flume/release-version/commit/68b8f831ceec7bf0a48aea9ff52e5b4acc3288b9))
+
+### Breaking Changes
+
+* The commit header format now requires chore(release): [semVer]
+ 6c63cdb366a0423bea4dc27beb8ab316ce2c2daa
+
+
 <a name="2.3.0"></a>
 ## 2.3.0 (2018-12-24)
 
