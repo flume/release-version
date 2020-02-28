@@ -2,11 +2,9 @@ package parser
 
 import (
 	"fmt"
-	"regexp"
-	"strings"
-
 	git "gopkg.in/src-d/go-git.v4"
 	"gopkg.in/src-d/go-git.v4/plumbing/object"
+	"regexp"
 )
 
 // SemVerChange describes the semver change type
@@ -34,9 +32,10 @@ type ConventionalCommit struct {
 	SemVer       string
 }
 
-var pattern = regexp.MustCompile(`^(?:(\w+)\(?(\w+)?\)?: (.+))(?:(?:\r?\n|$){0,2}(.+))?(?:(?:\r?\n|$){0,2}(.+))?(?:\r?\n|$){0,2}`)
+// var pattern = regexp.MustCompile(`^(?:(\w+)\(?(\w+|\*)?\)?: (.+))(?:(?:\r?\n|$){0,2}(.+))?(?:(?:\r?\n|$){0,2}(.+))?(?:\r?\n|$){0,2}`)
+var pattern = regexp.MustCompile(`^(?:(\w+)\(?(\w+|\*)?\)?: (.+))(?:(?:\r?\n|$){0,2}(.+\n)+)?(?:(?:\r?\n|$){0,2}(.+\n)+)?(?:\r?\n|$){0,2}`)
 var versionPattern = regexp.MustCompile(`^((([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)$`)
-var breakingChange = "BREAKING CHANGE: "
+var breakingChange = regexp.MustCompile(`BREAKING\s?CHANGE:\s?([^\n]+)`)
 
 // ParseCommits parses commits
 func ParseCommits(dir string) ([]ConventionalCommit, error) {
@@ -79,6 +78,10 @@ func ParseCommits(dir string) ([]ConventionalCommit, error) {
 			SemVerChange: Patch,
 		}
 
+		if commit.Component == "*" {
+			commit.Component = ""
+		}
+
 		// Detect last semver bump
 		tmp = versionPattern.FindStringSubmatch(commit.Description)
 		if commit.Type == "chore" && commit.Component == "release" &&
@@ -91,13 +94,20 @@ func ParseCommits(dir string) ([]ConventionalCommit, error) {
 			commit.SemVerChange = Minor
 		}
 
-		if strings.Contains(commit.Body, breakingChange) {
+		if breakingChange.MatchString(commit.Body) {
 			commit.SemVerChange = Major
-			commit.Breaking = commit.Body[len(breakingChange):]
+			matches := breakingChange.FindAllStringSubmatch(commit.Body, -1)
+			for _, m := range matches {
+				commit.Breaking = commit.Breaking + m[len(m)-1] + "\n"
+			}
 		}
-		if strings.Contains(commit.Footer, breakingChange) {
+
+		if breakingChange.MatchString(commit.Footer) {
 			commit.SemVerChange = Major
-			commit.Breaking = commit.Footer[len(breakingChange):]
+			matches := breakingChange.FindAllStringSubmatch(commit.Footer, -1)
+			for _, m := range matches {
+				commit.Breaking = commit.Breaking + m[len(m)-1] + "\n"
+			}
 		}
 
 		commits = append(commits, commit)

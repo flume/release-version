@@ -1,4 +1,4 @@
-# unchain ⛓️
+# release-version
 
 Release tool with automatic changelog generation and next SemVer version calculation based on conventional commits.
 
@@ -13,7 +13,7 @@ go get github.com/flume/release-version
 See help for available commands and parameters.
 
 ```sh
-unchain -h
+release-version -h
 ```
 
 ## Commands
@@ -23,11 +23,11 @@ unchain -h
 Run in your terminal:
 
 ```sh
-unchain release
+release-version release
 ```
 
-- `dir` optional *(default: workdir)*, directory
-- `suppressPush` optional *(default: false)*, suppress the git push
+- `--repository` or `-r` optional *(default: workdir)*, path to repository
+- `--suppressPush` or `-p` optional *(default: false)*, suppress the git push
 
 ### Starting from some previously defined version
 Add a commit with a first line that includes the previous version that looks like this:
@@ -75,7 +75,7 @@ Skips non API facing commits from the changelog like `test`, `chore` and `refact
 Detect SemVer change since latest Git Tag.
 
 ```sh
-$ unchain semver
+$ release-version semver
 Change Detected: major
 Next Version: 1.0.0
 ```
@@ -85,7 +85,7 @@ Next Version: 1.0.0
 Parse commits since latest Git Tag.
 
 ```sh
-$ unchain parse
+$ release-version parse
 hash,semver,type,component,description,body,footer
 ecd94da5b9f10c04ce53723729ae7068cc73557e,major,fix,foo,fifth commit,body,BREAKING CHANGE: so breaking
 29afc9699602e73418395226f22389a5271c5e58,major,fix,bar,fourth commit,BREAKING CHANGE: blabla,
