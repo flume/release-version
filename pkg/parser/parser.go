@@ -3,8 +3,10 @@ package parser
 import (
 	"fmt"
 	git "gopkg.in/src-d/go-git.v4"
+	"gopkg.in/src-d/go-git.v4/plumbing"
 	"gopkg.in/src-d/go-git.v4/plumbing/object"
 	"regexp"
+	"strings"
 )
 
 // SemVerChange describes the semver change type
@@ -57,6 +59,16 @@ func ParseCommits(dir string) ([]ConventionalCommit, error) {
 	var found = false
 	var commits []ConventionalCommit
 
+	tags := map[plumbing.Hash][]string{}
+	iRefs, _ := r.Tags()
+	_ = iRefs.ForEach(func(ref *plumbing.Reference) error {
+		if strings.HasPrefix(ref.Strings()[0], "refs/tags/") {
+			tags[ref.Hash()] = append(tags[ref.Hash()], strings.TrimPrefix(ref.Strings()[0], "refs/tags/"))
+		}
+
+		return nil
+	})
+
 	err = cIter.ForEach(func(c *object.Commit) error {
 		if found {
 			return nil
@@ -82,10 +94,20 @@ func ParseCommits(dir string) ([]ConventionalCommit, error) {
 			commit.Component = ""
 		}
 
-		// Detect last semver bump
+		// Detect last semver bump from tag
+		for _, tag := range tags[c.Hash] {
+			matches := versionPattern.FindStringSubmatch(tag)
+			if len(matches) > 0 {
+				found = true
+				commit.SemVer = matches[1]
+				break
+			}
+		}
+
+		// Detect last semver bump from commit
 		tmp = versionPattern.FindStringSubmatch(commit.Description)
-		if commit.Type == "chore" && commit.Component == "release" &&
-			len(tmp) > 0 {
+
+		if !found && commit.Type == "chore" && commit.Component == "release" && len(tmp) > 0 {
 			found = true
 			commit.SemVer = tmp[1]
 		}
