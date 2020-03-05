@@ -1,3 +1,11 @@
+## [3.1.0](https://github.com/flume/release-version/compare/3.0.0...3.1.0) (2020-03-05)
+
+
+### Features
+
+* **parser:** add support for version based on tag, then commit message ([5335dfc](https://github.com/flume/release-version/commit/5335dfc36308db5442286bd660c6b199826f5965))
+
+
 # [3.0.0](https://github.com/flume/release-version/compare/2.3.0...3.0.0) (2020-02-28)
 
 ### Bug Fixes
