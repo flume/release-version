@@ -23,7 +23,7 @@ func GetParseCmd() *cobra.Command {
 		Short: "Parses commits",
 		Long:  `parsing conventional commits.`,
 		Run: func(cmd *cobra.Command, args []string) {
-			commits, err := parser.ParseCommits(dir)
+			commits, err := parser.ParseCommits(dir, "")
 
 			if err != nil {
 				panic(err)
@@ -53,6 +53,5 @@ func GetParseCmd() *cobra.Command {
 		"",
 		"Repository directory",
 	)
-
 	return cmdParse
 }

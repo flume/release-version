@@ -24,7 +24,7 @@ func GetSemverCmd() *cobra.Command {
 		Short: "Next semver version",
 		Long:  `semver is calculating the next SemVer version.`,
 		Run: func(cmd *cobra.Command, args []string) {
-			commits, err := parser.ParseCommits(dir)
+			commits, err := parser.ParseCommits(dir, "")
 
 			if err != nil {
 				panic(err)
