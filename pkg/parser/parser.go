@@ -40,7 +40,7 @@ var versionPattern = regexp.MustCompile(`^((([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-
 var breakingChange = regexp.MustCompile(`BREAKING\s?CHANGE:\s?([^\n]+)`)
 
 // ParseCommits parses commits
-func ParseCommits(dir, branchName string) ([]ConventionalCommit, error) {
+func ParseCommits(dir string) ([]ConventionalCommit, error) {
 	r, err := git.PlainOpen(dir)
 	if err != nil {
 		return nil, fmt.Errorf("[ParseCommits] open repo: %v", err)
@@ -49,14 +49,6 @@ func ParseCommits(dir, branchName string) ([]ConventionalCommit, error) {
 	ref, err := r.Head()
 	if err != nil {
 		return nil, fmt.Errorf("[ParseCommits] head: %v", err)
-	}
-
-	if branchName != "" {
-		// Check out the desired branch
-		ref, err = r.Reference(plumbing.NewRemoteReferenceName("origin", branchName), true)
-		if err != nil {
-			return nil, fmt.Errorf("[ParseCommits] reference: %v", err)
-		}
 	}
 
 	cIter, err := r.Log(&git.LogOptions{From: ref.Hash()})

@@ -2,6 +2,7 @@ package semver
 
 import (
 	"fmt"
+	"github.com/flume/release-version/pkg/git"
 
 	sv "github.com/coreos/go-semver/semver"
 	"github.com/flume/release-version/pkg/parser"
@@ -21,17 +22,17 @@ func GetChange(commits []parser.ConventionalCommit) parser.SemVerChange {
 	return change
 }
 
-func GetLastVersion(commits []parser.ConventionalCommit) string {
-	i := len(commits) - 1
-	for i > -1 {
-		commit := commits[i]
-		if commit.SemVer != "" {
-			return commit.SemVer
-		}
-		i--
+func GetLastVersion(dir string) (string, error) {
+	tag, err := git.GetLatestTag(dir)
+	if err != nil {
+		return "", fmt.Errorf("[semver.GetLastVersion] get latest tag: %v", err)
 	}
 
-	return "0.0.0"
+	if tag == "" {
+		return "0.0.0", nil
+	}
+
+	return tag, nil
 }
 
 // GetVersion calculate version
