@@ -69,7 +69,7 @@ func Release(path string, change parser.SemVerChange, ch chan Result, options Re
 	}
 
 	// Parse Commits
-	commits, err := parser.ParseCommits(path, options.Branch)
+	commits, err := parser.ParseCommits(path)
 	if err != nil {
 		ch <- Result{
 			Error: fmt.Errorf("[Release] parse commits: %v", err),
@@ -81,16 +81,10 @@ func Release(path string, change parser.SemVerChange, ch chan Result, options Re
 		Message: strconv.Itoa(len(commits)),
 	}
 
-	// Read version from last bump commit if exist
-	var version string
-	if len(commits) > 0 {
-		lastCommit := commits[len(commits)-1]
-		if lastCommit.SemVer != "" {
-			version = lastCommit.SemVer
-			ch <- Result{
-				Phase:   PhaseLastVersionFromCommit,
-				Message: version,
-			}
+	version, err := semver.GetLastVersion(path)
+	if err != nil {
+		ch <- Result{
+			Error: fmt.Errorf("[Release] get last version: %v", err),
 		}
 	}
 

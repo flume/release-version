@@ -12,6 +12,7 @@ import (
 
 // GetSemverCmd returns the semver cmd
 func GetSemverCmd() *cobra.Command {
+	var branch string
 	// Default dir is the working directory
 	dir, err := os.Getwd()
 	if err != nil {
@@ -24,7 +25,7 @@ func GetSemverCmd() *cobra.Command {
 		Short: "Next semver version",
 		Long:  `semver is calculating the next SemVer version.`,
 		Run: func(cmd *cobra.Command, args []string) {
-			commits, err := parser.ParseCommits(dir, "")
+			commits, err := parser.ParseCommits(dir)
 
 			if err != nil {
 				panic(err)
@@ -33,7 +34,11 @@ func GetSemverCmd() *cobra.Command {
 			change := semver.GetChange(commits)
 			fmt.Printf("Change Detected: %v\n", change)
 
-			ver, _ := semver.GetVersion(semver.GetLastVersion(commits), change)
+			latestTag, err := semver.GetLastVersion(dir)
+			if err != nil {
+				panic(err)
+			}
+			ver, _ := semver.GetVersion(latestTag, change)
 			fmt.Printf("Next Version: %v\n", ver)
 		},
 	}
@@ -44,6 +49,14 @@ func GetSemverCmd() *cobra.Command {
 		"r",
 		"",
 		"Repository directory",
+	)
+
+	cmdSemver.Flags().StringVarP(
+		&branch,
+		"branch",
+		"b",
+		"",
+		"Which branch to write run against",
 	)
 
 	return cmdSemver

@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -11,6 +12,7 @@ import (
 
 // GetParseCmd returns the parse cmd
 func GetParseCmd() *cobra.Command {
+	var branch string
 	// Default dir is the working directory
 	dir, err := os.Getwd()
 	if err != nil {
@@ -23,26 +25,13 @@ func GetParseCmd() *cobra.Command {
 		Short: "Parses commits",
 		Long:  `parsing conventional commits.`,
 		Run: func(cmd *cobra.Command, args []string) {
-			commits, err := parser.ParseCommits(dir, "")
+			commits, err := parser.ParseCommits(dir)
 
 			if err != nil {
 				panic(err)
 			}
-
-			fmt.Println("hash,semver,type,component,description,body,footer")
-			for _, commit := range commits {
-				o := fmt.Sprintf(
-					"%s,%s,%s,%s,%s,%s,%s",
-					commit.Hash,
-					commit.SemVerChange,
-					commit.Type,
-					commit.Component,
-					commit.Description,
-					commit.Body,
-					commit.Footer,
-				)
-				fmt.Println(o)
-			}
+			b, _ := json.MarshalIndent(commits, "", "  ")
+			fmt.Println(string(b))
 		},
 	}
 
@@ -52,6 +41,14 @@ func GetParseCmd() *cobra.Command {
 		"r",
 		"",
 		"Repository directory",
+	)
+
+	cmdParse.Flags().StringVarP(
+		&branch,
+		"branch",
+		"b",
+		"",
+		"Which branch to write run against",
 	)
 	return cmdParse
 }
