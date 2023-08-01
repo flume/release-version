@@ -56,12 +56,6 @@ func Commit(dir string, file string, message string, user *User, branchName stri
 	}()
 
 	if branchName != "" {
-		// Check out the desired branch
-		err = r.Fetch(&git.FetchOptions{})
-		if err != nil && !errors.Is(err, git.NoErrAlreadyUpToDate) {
-			return fmt.Errorf("[Git] fetch: %v", err)
-		}
-
 		// Try to get the reference of the desired branch
 		var branchRef *plumbing.Reference
 		branchRef, err := r.Reference(plumbing.NewRemoteReferenceName("origin", branchName), false)
@@ -84,6 +78,7 @@ func Commit(dir string, file string, message string, user *User, branchName stri
 			if strings.Contains(err.Error(), "already exists") {
 				err = w.Checkout(&git.CheckoutOptions{
 					Branch: plumbing.NewBranchReferenceName(branchName),
+					Create: true,
 					Keep:   true,
 				})
 				if err != nil {
