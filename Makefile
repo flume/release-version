@@ -23,4 +23,4 @@ clean:
 	@rm -f release-version
 
 install:
-	@go build -o ${GOPATH}/bin/release-version -i ${BUILD_FLAGS} main.go
+	@go build -o ${GOPATH}/bin/release-version main.go
