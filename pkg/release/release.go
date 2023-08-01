@@ -69,7 +69,7 @@ func Release(path string, change parser.SemVerChange, ch chan Result, options Re
 	}
 
 	// Parse Commits
-	commits, err := parser.ParseCommits(path)
+	commits, err := parser.ParseCommits(path, options.Branch)
 	if err != nil {
 		ch <- Result{
 			Error: fmt.Errorf("[Release] parse commits: %v", err),
