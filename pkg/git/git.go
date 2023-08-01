@@ -48,7 +48,7 @@ func Commit(dir string, file string, message string, user *User, branchName stri
 	if branchName != "" {
 		var branchRef *plumbing.Reference
 		// Check out the desired branch
-		branchRef, err = r.Reference(plumbing.ReferenceName("refs/heads/"+branchName), true)
+		branchRef, err = r.Reference(plumbing.NewRemoteReferenceName("origin", branchName), true)
 		if err != nil {
 			return fmt.Errorf("[Git] get branch reference: %v", err)
 		}
