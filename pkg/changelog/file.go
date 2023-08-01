@@ -38,10 +38,10 @@ func Prepend(dir string, content string) (string, error) {
 }
 
 // GitCommit adds CHANGELOG.md to Git
-func GitCommit(dir string, version string, user *git.User) error {
+func GitCommit(dir string, version string, user *git.User, branch string) error {
 	message := fmt.Sprintf("chore(release): %s", version)
 
-	err := git.Commit(dir, changelogFile, message, user)
+	err := git.Commit(dir, changelogFile, message, user, branch)
 	if err != nil {
 		return fmt.Errorf("[GitAdd] open repo: %v", err)
 	}
