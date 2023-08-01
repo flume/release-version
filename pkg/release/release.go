@@ -48,6 +48,7 @@ type Result struct {
 
 type ReleaseOptions struct {
 	SuppressPush bool
+	Branch       string
 }
 
 // Release generate changelog and tag release
@@ -153,7 +154,7 @@ func Release(path string, change parser.SemVerChange, ch chan Result, options Re
 	}
 
 	// Generate changelog
-	cf, _, err := changelog.Save(path, newVersion, version, change, commits, user)
+	cf, _, err := changelog.Save(path, newVersion, version, change, commits, user, options.Branch)
 	if err != nil {
 		ch <- Result{
 			Error: fmt.Errorf("[Release] save changelog: %v", err),
