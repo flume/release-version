@@ -29,7 +29,7 @@ func Release(dir string, version string, user *User, suppressPush bool) error {
 }
 
 // Commit commit file
-func Commit(dir string, file string, message string, user *User) error {
+func Commit(dir string, file string, message string, user *User, branchName string) error {
 	r, err := git.PlainOpen(dir)
 	if err != nil {
 		return fmt.Errorf("[Git] open repo: %v", err)
@@ -38,6 +38,28 @@ func Commit(dir string, file string, message string, user *User) error {
 	w, err := r.Worktree()
 	if err != nil {
 		return fmt.Errorf("[Git] worktree: %v", err)
+	}
+
+	headRef, err := r.Head()
+	if err != nil {
+		return fmt.Errorf("[Git] head ref: %v", err)
+	}
+
+	if branchName != "" {
+		var branchRef *plumbing.Reference
+		// Check out the desired branch
+		branchRef, err = r.Reference(plumbing.ReferenceName("refs/heads/"+branchName), true)
+		if err != nil {
+			return fmt.Errorf("[Git] get branch reference: %v", err)
+		}
+
+		err = w.Checkout(&git.CheckoutOptions{
+			Branch: branchRef.Name(),
+			Keep:   true,
+		})
+		if err != nil {
+			return fmt.Errorf("[Git] checkout branch: %v", err)
+		}
 	}
 
 	_, err = w.Add(file)
@@ -55,6 +77,10 @@ func Commit(dir string, file string, message string, user *User) error {
 	if err != nil {
 		return fmt.Errorf("[Git] commit: %v", err)
 	}
+
+	err = w.Checkout(&git.CheckoutOptions{
+		Branch: headRef.Name(),
+	})
 
 	return nil
 }
