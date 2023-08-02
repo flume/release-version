@@ -48,7 +48,6 @@ type Result struct {
 
 type ReleaseOptions struct {
 	SuppressPush bool
-	Branch       string
 }
 
 // Release generate changelog and tag release
@@ -81,10 +80,16 @@ func Release(path string, change parser.SemVerChange, ch chan Result, options Re
 		Message: strconv.Itoa(len(commits)),
 	}
 
-	version, err := semver.GetLastVersion(path)
-	if err != nil {
-		ch <- Result{
-			Error: fmt.Errorf("[Release] get last version: %v", err),
+	// Read version from last bump commit if exist
+	var version string
+	if len(commits) > 0 {
+		lastCommit := commits[len(commits)-1]
+		if lastCommit.SemVer != "" {
+			version = lastCommit.SemVer
+			ch <- Result{
+				Phase:   PhaseLastVersionFromCommit,
+				Message: version,
+			}
 		}
 	}
 
@@ -148,7 +153,7 @@ func Release(path string, change parser.SemVerChange, ch chan Result, options Re
 	}
 
 	// Generate changelog
-	cf, _, err := changelog.Save(path, newVersion, version, change, commits, user, options.Branch)
+	cf, _, err := changelog.Save(path, newVersion, version, change, commits, user)
 	if err != nil {
 		ch <- Result{
 			Error: fmt.Errorf("[Release] save changelog: %v", err),

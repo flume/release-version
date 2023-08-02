@@ -1,7 +1,6 @@
 package git
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -30,7 +29,7 @@ func Release(dir string, version string, user *User, suppressPush bool) error {
 }
 
 // Commit commit file
-func Commit(dir string, file string, message string, user *User, branchName string) (err error) {
+func Commit(dir string, file string, message string, user *User) error {
 	r, err := git.PlainOpen(dir)
 	if err != nil {
 		return fmt.Errorf("[Git] open repo: %v", err)
@@ -39,53 +38,6 @@ func Commit(dir string, file string, message string, user *User, branchName stri
 	w, err := r.Worktree()
 	if err != nil {
 		return fmt.Errorf("[Git] worktree: %v", err)
-	}
-
-	headRef, err := r.Head()
-	if err != nil {
-		return fmt.Errorf("[Git] head ref: %v", err)
-	}
-
-	defer func() {
-		cerr := w.Checkout(&git.CheckoutOptions{
-			Branch: headRef.Name(),
-		})
-		if cerr != nil {
-			err = fmt.Errorf("%v: %v", cerr, err)
-		}
-	}()
-
-	if branchName != "" {
-		// Try to get the reference of the desired branch
-		var branchRef *plumbing.Reference
-		branchRef, err := r.Reference(plumbing.NewRemoteReferenceName("origin", branchName), false)
-		if err != nil {
-			return fmt.Errorf("[Git] get remote branch reference: %v", err)
-		}
-
-		if branchRef == nil {
-			return fmt.Errorf("[Git] branch '%s' not found", branchName)
-		}
-
-		// Checkout the branch by creating a new local branch based on the remote branch commit
-		err = w.Checkout(&git.CheckoutOptions{
-			Hash:   branchRef.Hash(),
-			Branch: plumbing.ReferenceName(fmt.Sprintf("refs/heads/%s", branchName)),
-			Create: true,
-			Keep:   true,
-		})
-		if err != nil {
-			if strings.Contains(err.Error(), "already exists") {
-				err = w.Checkout(&git.CheckoutOptions{
-					Branch: plumbing.NewBranchReferenceName(branchName),
-					Create: true,
-					Keep:   true,
-				})
-				if err != nil {
-					return fmt.Errorf("[Git] checkout local branch: %v", err)
-				}
-			}
-		}
 	}
 
 	_, err = w.Add(file)
@@ -132,53 +84,6 @@ func Tag(dir string, version string, user *User) (*plumbing.Reference, error) {
 	}
 
 	return ref, nil
-}
-
-func GetLatestTag(dir string) (string, error) {
-	r, err := git.PlainOpen(dir)
-	if err != nil {
-		return "", fmt.Errorf("[Tag] open repo: %v", err)
-	}
-
-	tags, err := r.Tags()
-	if err != nil {
-		return "", err
-	}
-
-	var latestTag string
-	var latestCommit *object.Commit
-
-	err = tags.ForEach(func(t *plumbing.Reference) error {
-		// We're interested in annotated tags only
-		if t.Name().IsTag() {
-			tagObj, err := r.TagObject(t.Hash())
-			if err != nil {
-				switch {
-				case errors.Is(err, plumbing.ErrObjectNotFound):
-					return nil
-				default:
-					return fmt.Errorf("tag object: %v", err)
-				}
-			}
-
-			// Get the commit object associated with the tag
-			commitObj, err := r.CommitObject(tagObj.Target)
-			if err != nil {
-				return fmt.Errorf("commit object: %v", err)
-			}
-
-			// Check if this tag is the latest one
-			if latestCommit == nil || commitObj.Committer.When.After(latestCommit.Committer.When) {
-				latestCommit = commitObj
-				latestTag = t.Name().Short()
-			}
-		}
-		return nil
-	})
-	if err != nil {
-		return "", err
-	}
-	return latestTag, nil
 }
 
 // Push push to remote
