@@ -15,12 +15,12 @@ func Save(
 	change parser.SemVerChange,
 	commits []parser.ConventionalCommit,
 	user *git.User,
-	branch string,
 ) (
 	string,
 	string,
 	error,
 ) {
+
 	// get a remote path to try to use in the markdown
 	rPath, _ := git.GetRemotePath(dir)
 
@@ -34,7 +34,7 @@ func Save(
 	}
 
 	// Add to Git
-	err = GitCommit(dir, newVersion, user, branch)
+	err = GitCommit(dir, newVersion, user)
 	if err != nil {
 		return file, markdown, fmt.Errorf("[Save] git commit: %v", err)
 	}

@@ -13,7 +13,6 @@ import (
 // GetReleaseCmd returns the release cmd
 func GetReleaseCmd() *cobra.Command {
 	var changeFlag string
-	var branch string
 	var suppressPush bool
 
 	// Default dir is the working directory
@@ -40,10 +39,7 @@ remote. For npm libraries it also bumps the package.json file.`,
 
 			// Start release
 			results := make(chan release.Result)
-			go release.Release(dir, change, results, release.ReleaseOptions{
-				SuppressPush: suppressPush,
-				Branch:       branch,
-			})
+			go release.Release(dir, change, results, release.ReleaseOptions{SuppressPush: suppressPush})
 
 			// Results
 			statusCounter := 0
@@ -85,14 +81,6 @@ remote. For npm libraries it also bumps the package.json file.`,
 		"p",
 		false,
 		"Suppress the push step",
-	)
-
-	cmdRelease.Flags().StringVarP(
-		&branch,
-		"branch",
-		"b",
-		"",
-		"Which branch to write the changelog to, if not set the default is the current branch",
 	)
 
 	return cmdRelease
