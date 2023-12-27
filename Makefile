@@ -24,3 +24,6 @@ clean:
 
 install:
 	@go build -o ${GOPATH}/bin/release-version main.go
+
+fmt:
+    goimports -local github.com/flume -w ./
