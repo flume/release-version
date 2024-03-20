@@ -3,8 +3,9 @@ package semver
 import (
 	"testing"
 
-	"github.com/flume/release-version/pkg/parser"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/flume/release-version/pkg/parser"
 )
 
 func TestGetChange(t *testing.T) {

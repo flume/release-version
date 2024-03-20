@@ -5,9 +5,10 @@ import (
 	"log"
 	"os"
 
+	"github.com/spf13/cobra"
+
 	"github.com/flume/release-version/pkg/parser"
 	"github.com/flume/release-version/pkg/semver"
-	"github.com/spf13/cobra"
 )
 
 // GetSemverCmd returns the semver cmd

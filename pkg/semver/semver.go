@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	sv "github.com/coreos/go-semver/semver"
+
 	"github.com/flume/release-version/pkg/parser"
 )
 
