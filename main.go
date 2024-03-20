@@ -1,8 +1,9 @@
 package main
 
 import (
-	"github.com/flume/release-version/cmd"
 	"github.com/spf13/cobra"
+
+	"github.com/flume/release-version/cmd"
 )
 
 func main() {
